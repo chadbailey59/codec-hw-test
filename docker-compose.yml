@@ -1,0 +1,14 @@
+services:
+  codec-hw-test:
+    build: .
+    image: codec-hw-test:latest
+    container_name: codec-hw-test
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+    networks:
+      - web
+
+networks:
+  web:
+    external: true

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video codec hardware test</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css?v=1791899664">
+</head>
+<body>
+<main>
+  <h1>Video codec hardware test</h1>
+  <p>
+    Browsers tell web pages whether a video codec runs in dedicated hardware.
+    This page checks whether those answers are true. For each codec your
+    browser supports, it compares what the browser predicts with the encoder
+    and decoder it uses when it sends and receives video.
+  </p>
+  <p>
+    The test takes about 5 minutes. It uses your camera, but no video leaves
+    your computer: the call runs between two connections inside this page.
+    When it finishes, it sends the results (browser, operating system, GPU
+    name, and codec measurements) to Chad Bailey at Daily. It doesn't send
+    any video.
+  </p>
+
+  <ol>
+    <li>Close other video calls and tabs that use the camera.</li>
+    <li>Click <b>Run test</b> and allow camera access.</li>
+    <li>Keep this tab in front until the test finishes.</li>
+  </ol>
+
+  <form id="form">
+    <label>Your name (optional)
+      <input id="name" type="text" autocomplete="name" maxlength="80">
+    </label>
+    <label>Computer model (optional, for example "M1 MacBook Air" or "Dell XPS 13 9320")
+      <input id="model" type="text" maxlength="120">
+    </label>
+    <fieldset id="reportBox" class="report">
+      <legend>Optional: add your browser's own hardware report (about 1 minute)</legend>
+      <p>
+        Your browser keeps an internal report of which video codecs it can run in
+        hardware. Adding it lets us check the test against it. Only the video
+        codec lines are sent, and you can see them below before you run the test.
+      </p>
+      <div id="reportFirefox" hidden>
+        <ol>
+          <li>Copy this address: <code>about:support</code> <button type="button" class="copy" data-copy="about:support">Copy</button></li>
+          <li>Open a new tab, paste the address, and press Enter. Firefox doesn't let web pages open it for you.</li>
+          <li>Near the top of that page, click <b>Copy raw data to clipboard</b>.</li>
+          <li>Come back to this tab and click <b>Paste report</b>, or paste into the box.</li>
+        </ol>
+      </div>
+      <div id="reportChromium" hidden>
+        <ol>
+          <li>Copy this address: <code id="gpuUrl">chrome://gpu</code> <button type="button" class="copy" id="gpuCopy" data-copy="chrome://gpu">Copy</button></li>
+          <li>Open a new tab, paste the address, and press Enter. The browser doesn't let web pages open it for you.</li>
+          <li>Near the top of that page, click <b>Copy Report to Clipboard</b>. If you downloaded the report as a file instead, choose it with <b>Upload report file</b>.</li>
+          <li>Come back to this tab and click <b>Paste report</b>, or paste into the box.</li>
+        </ol>
+      </div>
+      <div id="reportInputs">
+        <div class="buttons">
+          <button type="button" id="pasteReport">Paste report</button>
+          <label class="file-button">Upload report file <input type="file" id="reportFile" accept=".txt,.json,text/plain,application/json"></label>
+        </div>
+        <textarea id="groundTruth" rows="5" placeholder="Or paste the report here"></textarea>
+        <p id="reportStatus" class="hint"></p>
+        <pre id="reportPreview" hidden></pre>
+      </div>
+    </fieldset>
+    <label class="inline"><input id="share" type="checkbox" checked> Send the results to Chad when the test finishes</label>
+    <div class="buttons">
+      <button id="run" type="submit">Run test</button>
+      <button id="download" type="button" disabled>Download results</button>
+    </div>
+  </form>
+
+  <section id="debugPanel" class="report" hidden>
+    <h2>Debug: run one codec</h2>
+    <p class="hint">
+      Keeps one test call open so you can inspect it in <code>edge://webrtc-internals</code>
+      or <code>chrome://webrtc-internals</code>. Encoder and decoder changes also go to the
+      web inspector console. Debug runs aren't sent anywhere.
+    </p>
+    <div class="buttons">
+      <select id="debugCodec"></select>
+      <label class="inline">Keep the call open for <input id="debugHold" type="number" min="5" value="120" style="width:5em"> seconds</label>
+      <button type="button" id="debugStart">Start</button>
+      <button type="button" id="debugStop" disabled>Stop</button>
+    </div>
+    <pre id="debugLog"></pre>
+  </section>
+
+  <p id="status" role="status"></p>
+  <p id="cameraWarning" class="warning" hidden>
+    The camera isn't available, so the test is using generated video. Chrome and
+    Edge hide which encoder they used without camera access, so most results
+    can't be verified. If you can, allow camera access and run the test again.
+  </p>
+  <progress id="progress" value="0" max="1" hidden></progress>
+
+  <section id="summary" hidden></section>
+
+  <section id="resultsSection" hidden>
+    <h2>Results</h2>
+    <p class="hint">
+      <b>Browser says</b> is the browser's prediction. <b>What ran</b> is the
+      encoder or decoder the browser used during the test call. A red row means
+      they disagree.
+    </p>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Codec</th>
+            <th>Direction</th>
+            <th>Browser says<br><small>mediaCapabilities</small></th>
+            <th>Browser says<br><small>WebCodecs prefer-hardware</small></th>
+            <th>What ran<br><small>WebRTC implementation</small></th>
+            <th>What ran<br><small>WebRTC powerEfficient stat</small></th>
+            <th>WebRTC<br><small>ms per frame, resolution</small></th>
+            <th>WebCodecs run<br><small>hardware / software, ms per frame</small></th>
+            <th>Agree?</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Your environment</h2>
+    <pre id="env">Collected when the test starts.</pre>
+  </section>
+
+  <video id="preview" muted playsinline autoplay hidden></video>
+  <p class="footer"><a href="results.html">See everyone's results</a></p>
+</main>
+<script src="app.js?v=1791899664"></script>
+</body>
+</html>

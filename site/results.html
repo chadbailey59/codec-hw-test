@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video codec hardware test: all results</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css?v=1791899664">
+</head>
+<body>
+<main>
+  <h1>All results</h1>
+  <p><a href="./">Run the test</a> · <a href="/api/results">Raw JSON</a></p>
+  <p id="status">Loading…</p>
+
+  <h2>Does the browser tell the truth?</h2>
+  <p class="hint">
+    Each check compares the browser's prediction
+    (<code>mediaCapabilities</code> <code>powerEfficient</code>) with the
+    encoder or decoder that ran in the test call. "Can't tell" means the
+    browser didn't expose what ran.
+  </p>
+  <div class="scroll"><table id="byBrowser"></table></div>
+
+  <h2>Wrong predictions</h2>
+  <div class="scroll"><table id="misses"></table></div>
+
+  <h2>Submissions</h2>
+  <div class="scroll"><table id="submissions"></table></div>
+</main>
+<script src="results.js?v=1791899664"></script>
+</body>
+</html>
